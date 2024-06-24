@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Quiz Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #game-container {
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 800px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .question h2 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .options button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin: 5px 0;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+            text-align: left;
+        }
+        .options button:hover {
+            background-color: #0056b3;
+        }
+        #score {
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: center;
+        }
+        #name-input-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        #name-input {
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            width: 250px;
+            box-sizing: border-box;
+            margin-right: 10px;
+        }
+        #start-button {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        #start-button:hover {
+            background-color: #218838;
+        }
+        #result {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Kubernetes Quiz Game</h1>
+        <div id="name-input-container">
+            <label for="name-input">Digite seu nome:</label>
+            <input type="text" id="name-input">
+            <button id="start-button" onclick="startGame()">Iniciar Jogo</button>
+        </div>
+        <div class="question" id="question-container" style="display: none;">
+            <h2 id="question"></h2>
+            <div class="options">
+                <button id="option0" onclick="selectOption(0)"></button>
+                <button id="option1" onclick="selectOption(1)"></button>
+                <button id="option2" onclick="selectOption(2)"></button>
+                <button id="option3" onclick="selectOption(3)"></button>
+            </div>
+        </div>
+        <div id="score"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "O que é Kubernetes?",
+                options: [
+                    "Um sistema de monitoramento de servidores",
+                    "Uma plataforma de orquestração de contêineres",
+                    "Um serviço de banco de dados",
+                    "Uma linguagem de programação"
+                ],
+                correct: 1
+            },
+            {
+                question: "Qual é o principal objetivo do Kubernetes?",
+                options: [
+                    "Automatizar a criação de máquinas virtuais",
+                    "Gerenciar aplicações baseadas em contêineres",
+                    "Fornecer serviços de DNS na nuvem",
+                    "Desenvolver aplicações web"
+                ],
+                correct: 1
+            },
+            {
+                question: "O que é um Pod no Kubernetes?",
+                options: [
+                    "Um grupo de nós em um cluster",
+                    "A menor unidade no modelo de objetos do Kubernetes",
+                    "Um serviço de rede para balanceamento de carga",
+                    "Uma configuração de segurança avançada"
+                ],
+                correct: 1
+            },
+            {
+                question: "Qual componente do Kubernetes é responsável por garantir que os contêineres estejam rodando em um Pod?",
+                options: [
+                    "Kubelet",
+                    "Kubernetes Dashboard",
+                    "Kube-proxy",
+                    "Podman"
+                ],
+                correct: 0
+            },
+            {
+                question: "O que é um Deployment no Kubernetes?",
+                options: [
+                    "Um tipo de Pod especializado para jobs de processamento em lote",
+                    "Um serviço de balanceamento de carga",
+                    "Uma política de acesso a contêineres",
+                    "Fornece atualizações declarativas para Pods e ReplicaSets"
+                ],
+                correct: 3
+            },
+            {
+                question: "Qual é a vantagem da escalabilidade horizontal no Kubernetes?",
+                options: [
+                    "Redução de custos operacionais",
+                    "Aumento da segurança de dados",
+                    "Adicionar ou remover instâncias de contêineres conforme necessário",
+                    "Melhoria na eficiência de recursos"
+                ],
+                correct: 2
+            },
+            {
+                question: "O que é Service Discovery no Kubernetes?",
+                options: [
+                    "Ferramenta de gerenciamento de configurações",
+                    "Distribui o tráfego de rede para os Pods corretos",
+                    "Fornece uma interface gráfica para gerenciamento de serviços",
+                    "Uma técnica para virtualização de redes"
+                ],
+                correct: 1
+            },
+            {
+                question: "Qual é o papel do Kube-proxy no Kubernetes?",
+                options: [
+                    "Gerenciar a alocação de recursos físicos",
+                    "Manter as regras de rede no nó e permitir a comunicação de rede com os Pods",
+                    "Automatizar a implantação de aplicações",
+                    "Fornecer uma interface gráfica para gerenciamento de contêineres"
+                ],
+                correct: 1
+            },
+            {
+                question: "O que é ConfigMap no Kubernetes?",
+                options: [
+                    "Um serviço de nuvem para armazenamento de dados",
+                    "Uma API para gerenciamento de clusters",
+                    "Gerenciar configurações de aplicação separadamente do código",
+                    "Um componente para balanceamento de carga"
+                ],
+                correct: 2
+            },
+            {
+                question: "Por que o Kubernetes é importante para ambientes de nuvem?",
+                options: [
+                    "Facilita o monitoramento de hardware físico",
+                    "Permite a execução consistente de aplicações em qualquer ambiente",
+                    "Reduz a necessidade de serviços de armazenamento",
+                    "Aumenta a complexidade na implantação de aplicações"
+                ],
+                correct: 1
+            },
+            {
+                question: "Quais são os benefícios da orquestração de contêineres no Kubernetes?",
+                options: [
+                    "Automação, resiliência, eficiência de recursos, portabilidade e escalabilidade",
+                    "Redução de custos operacionais",
+                    "Aumento da complexidade de implantação",
+                    "Melhoria na segurança da rede"
+                ],
+                correct: 0
+            },
+            {
+                question: "O que é uma arquitetura de nuvem híbrida no contexto do Kubernetes?",
+                options: [
+                    "Uma técnica para aumentar a capacidade de um único servidor",
+                    "Uma combinação de nuvem pública e privada",
+                    "Um software para gerenciamento de contêineres",
+                    "Uma API para automação de operações"
+                ],
+                correct: 1
+            },
+            {
+                question: "Qual é a função do kubelet no Kubernetes?",
+                options: [
+                    "Garantir que os contêineres estejam rodando em um Pod",
+                    "Monitorar o desempenho da rede",
+                    "Prover serviços de banco de dados",
+                    "Automatizar o provisionamento de servidores físicos"
+                ],
+                correct: 0
+            },
+            {
+                question: "O que caracteriza o modelo de objetos do Kubernetes?",
+                options: [
+                    "Define como os recursos são criados e gerenciados",
+                    "Define o modelo de segurança do cluster",
+                    "Define a arquitetura física dos servidores",
+                    "Define a política de backup e restauração"
+                ],
+                correct: 0
+            },
+            {
+                question: "Qual é o papel do ReplicaSet no Kubernetes?",
+                options: [
+                    "Garantir que apenas réplicas autorizadas acessem um serviço",
+                    "Garantir que apenas usuários autorizados acessem um Pod",
+                    "Manter um conjunto especificado de réplicas de Pods rodando",
+                    "Manter um conjunto de contêineres em execução em todos os nós do cluster"
+                ],
+                correct: 2
+            },
+            {
+                question: "O que é um Namespace no Kubernetes?",
+                options: [
+                    "Um tipo de serviço para armazenamento de dados",
+                    "Um mecanismo para limitar recursos de hardware em um Pod",
+                    "Uma partição virtual de um cluster Kubernetes",
+                    "Um software para gerenciar atualizações de sistema operacional"
+                ],
+                correct: 2
+            },
+            {
+                question: "Como o Kubernetes suporta a resiliência de aplicações?",
+                options: [
+                    "Automatizando a implantação de novos serviços de banco de dados",
+                    "Reiniciando automaticamente contêineres que falham",
+                    "Alocando mais recursos de hardware para aplicações críticas",
+                    "Automatizando a migração de VMs entre hosts físicos"
+                ],
+                correct: 1
+            },
+            {
+                question: "O que é um Job no contexto do Kubernetes?",
+                options: [
+                    "Um tipo de Pod usado para processamento em lote",
+                    "Uma técnica para virtualização de armazenamento",
+                    "Uma API para interação com serviços externos",
+                    "Uma política de rede para balanceamento de carga"
+                ],
+                correct: 0
+            },
+            {
+                question: "Qual é o papel do Service Account no Kubernetes?",
+                options: [
+                    "Gerenciar o ciclo de vida de aplicações em um cluster",
+                    "Definir políticas de segurança para contêineres",
+                    "Prover serviços de monitoramento de rede",
+                    "Fornecer identidade aos processos em contêineres"
+                ],
+                correct: 3
+            },
+            {
+                question: "Como o Kubernetes facilita a portabilidade de aplicações?",
+                options: [
+                    "Permitindo a execução de aplicações apenas em ambientes locais",
+                    "Automatizando a instalação de software no sistema operacional",
+                    "Gerenciando configurações de rede em ambientes de nuvem pública",
+                    "Permitindo a movimentação fácil de aplicações entre diferentes ambientes"
+                ],
+                correct: 3
+            },
+            {
+                question: "Qual é a função do ConfigMap no Kubernetes?",
+                options: [
+                    "Gerenciar configurações de aplicação separadamente do código",
+                    "Monitorar o uso de CPU e memória dos Pods",
+                    "Automatizar a distribuição de atualizações de segurança",
+                    "Definir políticas de acesso a serviços de rede"
+                ],
+                correct: 0
+            },
+            {
+                question: "Qual é a principal vantagem do uso de Labels no Kubernetes?",
+                options: [
+                    "Facilitar a distribuição de patches de segurança",
+                    "Organizar e selecionar conjuntos de objetos Kubernetes",
+                    "Melhorar o desempenho de rede entre Pods",
+                    "Automatizar a instalação de software em nós do cluster"
+                ],
+                correct: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let playerName = "";
+
+        function startGame() {
+            playerName = document.getElementById('name-input').value.trim();
+            if (playerName === "") {
+                alert("Por favor, digite seu nome para começar o jogo.");
+                return;
+            }
+            document.getElementById('name-input-container').style.display = 'none';
+            document.getElementById('question-container').style.display = 'block';
+            showQuestion();
+            updateScore();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question').textContent = q.question;
+            const options = q.options;
+            for (let i = 0; i < options.length; i++) {
+                document.getElementById(`option${i}`).textContent = options[i];
+            }
+        }
+
+        function selectOption(option) {
+            const q = questions[currentQuestion];
+            if (option === q.correct) {
+                score++;
+            }
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+            updateScore();
+        }
+
+        function updateScore() {
+            document.getElementById('score').textContent = `Score: ${score}`;
+        }
+
+        function showResult() {
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('score').style.display = 'none';
+            document.getElementById('result').innerHTML = `
+                <h2>${playerName}, você acertou ${score} de ${questions.length} perguntas!</h2>
+                <p>Seu score final é: ${score}</p>
+            `;
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
